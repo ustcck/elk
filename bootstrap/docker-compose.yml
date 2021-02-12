@@ -37,14 +37,25 @@ services:
         depends_on:
             - elasticsearch
     zipkin:
-        image: ustcck/zipkin:2.23
+        image: ghcr.io/openzipkin/zipkin-slim
         container_name: zipkin
         restart: always
+        privileged: true
         ports:
             - 9411:9411
         environment:
             - ES_HOSTS=http://elasticsearch:9200
             - ES_INDEX=traces
             - ZIPKIN_UI_LOGS_URL=http://10.106.226.98:5601/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-30d,mode:quick,to:now))&_a=(columns:!(X-B3-TraceId,app_name,level,message),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'baoding-dev*',key:X-B3-TraceId,negate:!f,params:(query:'trace',type:phrase),type:phrase,value:'trace'),query:(match:(X-B3-TraceId:(query:'{traceId}',type:phrase))))),index:'baoding-dev*',interval:auto,query:(language:lucene,query:''),sort:!('@timestamp',desc))
+        depends_on:
+            - elasticsearch
+    dependencies:
+        image: ghcr.io/openzipkin/zipkin-dependencies
+        container_name: dependencies
+        restart: always
+        entrypoint: crond -f
+        environment:
+            - STORAGE_TYPE=elasticsearch
+            - ES_HOSTS=elasticsearch
         depends_on:
             - elasticsearch
