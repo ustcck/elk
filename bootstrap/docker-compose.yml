@@ -1,0 +1,50 @@
+version: '2'
+services:
+    elasticsearch:
+        image: ustcck/elasticsearch:7.9.2
+        container_name: elasticsearch
+        restart: always
+        ports:
+            - 9200:9200
+            - 9300:9300
+        volumes:
+            - ./log-data:/usr/share/elasticsearch/data
+    logstash:
+        image: ustcck/logstash:7.9.2
+        container_name: logstash
+        restart: always
+        environment:
+            - INPUT_TCP_PORT=5000
+            - INPUT_UDP_PORT=5000
+            - ELASTICSEARCH_HOST=elasticsearch
+            - ELASTICSEARCH_PORT=9200
+            - LOGSTASH_DEBUG=false
+        ports:
+            - 5000:5000
+            - 5000:5000/udp
+        volumes:
+            - ./log-conf/:/usr/share/logstash/pipeline/
+        depends_on:
+            - elasticsearch
+    kibana:
+        image: ustcck/kibana:7.9.2
+        container_name: kibana
+        restart: always
+        environment:
+            - ELASTICSEARCH_URL=http://elasticsearch:9200
+        ports:
+            - 5601:5601
+        depends_on:
+            - elasticsearch
+    zipkin:
+        image: ustcck/zipkin:2.23
+        container_name: zipkin
+        restart: always
+        ports:
+            - 9411:9411
+        environment:
+            - ES_HOSTS=http://elasticsearch:9200
+            - ES_INDEX=traces
+            - ZIPKIN_UI_LOGS_URL=http://10.106.226.98:5601/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-30d,mode:quick,to:now))&_a=(columns:!(X-B3-TraceId,app_name,level,message),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'baoding-dev*',key:X-B3-TraceId,negate:!f,params:(query:'trace',type:phrase),type:phrase,value:'trace'),query:(match:(X-B3-TraceId:(query:'{traceId}',type:phrase))))),index:'baoding-dev*',interval:auto,query:(language:lucene,query:''),sort:!('@timestamp',desc))
+        depends_on:
+            - elasticsearch
