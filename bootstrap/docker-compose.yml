@@ -1,7 +1,7 @@
 version: '2'
 services:
     elasticsearch:
-        image: ustcck/elasticsearch:7.9.2
+        image: harbor.lenovo-r.cloud/library/elasticsearch:7.9.2
         container_name: elasticsearch
         restart: always
         ports:
@@ -10,7 +10,7 @@ services:
         volumes:
             - ./log-data:/usr/share/elasticsearch/data
     logstash:
-        image: ustcck/logstash:7.9.2
+        image: harbor.lenovo-r.cloud/library/logstash:7.9.2
         container_name: logstash
         restart: always
         environment:
@@ -27,7 +27,7 @@ services:
         depends_on:
             - elasticsearch
     kibana:
-        image: ustcck/kibana:7.9.2
+        image: harbor.lenovo-r.cloud/library/kibana:7.9.2
         container_name: kibana
         restart: always
         environment:
@@ -46,7 +46,7 @@ services:
         environment:
             - ES_HOSTS=http://elasticsearch:9200
             - ES_INDEX=traces
-            - ZIPKIN_UI_LOGS_URL=http://10.106.226.98:5601/app/kibana#/discover?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-30d,mode:quick,to:now))&_a=(columns:!(X-B3-TraceId,app_name,level,message),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'baoding-dev*',key:X-B3-TraceId,negate:!f,params:(query:'trace',type:phrase),type:phrase,value:'trace'),query:(match:(X-B3-TraceId:(query:'{traceId}',type:phrase))))),index:'baoding-dev*',interval:auto,query:(language:lucene,query:''),sort:!('@timestamp',desc))
+            - ZIPKIN_UI_LOGS_URL=http://10.106.226.98:5601/app/discover#/?_g=(refreshInterval:(display:Off,pause:!f,value:0),time:(from:now-30d,mode:quick,to:now))&_a=(columns:!(X-B3-TraceId,app_name,level,message),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'87d3e730-6d1e-11eb-90d8-27c294816780',key:X-B3-TraceId,negate:!f,params:(query:'{traceId}'),type:phrase),query:(match_phrase:(X-B3-TraceId:'{traceId}')))),index:'87d3e730-6d1e-11eb-90d8-27c294816780',interval:auto,query:(language:lucene,query:''),sort:!('@timestamp',desc))
         depends_on:
             - elasticsearch
     dependencies:
